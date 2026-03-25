@@ -7,13 +7,12 @@ const AdmZip = require('adm-zip'); // Import thư viện ZIP
 
 const app = express();
 const upload = multer({ dest: 'uploads/' });
-
 app.use(express.static('public'));
 
-function runWorker(inputFile, outputFile) {
+function runWorker(inputFile, outputFile,fileTime) {
     return new Promise((resolve) => {
         const worker = new Worker(path.join(__dirname, 'worker.js'), {
-            workerData: { inputFile, outputFile }
+            workerData: { inputFile, outputFile,fileTime }
         });
         worker.on('message', resolve);
         worker.on('error', (err) => resolve({ status: 'error', error: err.message }));
@@ -32,7 +31,7 @@ function removeVietnameseTones(str) {
     str = str.replace(/ỳ|ý|ỵ|ỷ|ỹ/g, "y");
     str = str.replace(/đ/g, "d");
     str = str.replace(/À|Á|Ạ|Ả|Ã|Â|Ầ|Ấ|Ậ|Ẩ|Ẫ|Ă|Ằ|Ắ|Ặ|Ẳ|Ẵ/g, "A");
-    str = str.setReplace(/È|É|Ẹ|Ẻ|Ẽ|Ê|Ề|Ế|Ệ|Ể|Ễ/g, "E");
+    str = str.replace(/È|É|Ẹ|Ẻ|Ẽ|Ê|Ề|Ế|Ệ|Ể|Ễ/g, "E");
     str = str.replace(/Ì|Í|Ị|Ỉ|Ĩ/g, "I");
     str = str.replace(/Ò|Ó|Ọ|Ỏ|Õ|Ô|Ồ|Ố|Ộ|Ổ|Ỗ|Ơ|Ờ|Ớ|Ợ|Ở|Ỡ/g, "O");
     str = str.replace(/Ù|Ú|Ụ|Ủ|Ũ|Ư|Ừ|Ứ|Ự|Ử|Ữ/g, "U");
@@ -64,14 +63,14 @@ app.post('/upload', upload.array('excelFiles', 50), async (req, res) => {
 
             if (!fs.existsSync('output')) fs.mkdirSync('output');
 
-            return runWorker(file.path, outputPath);
+            return runWorker(file.path, outputPath,(Date.now()).toLocaleString('vi-VN'));
         });
 
         await Promise.all(promises);
     }
 
-    // --- ĐOẠN ĐẶT TÊN FILE ZIP ---
-    const zipName = `Ket_Qua_Convert_${Date.now()}.zip`; // Đặt tên ZIP ở đây
+    // đặt tên file zip
+    const zipName = `Ket_Qua_Convert_${Date.now()}.zip`;
     const zipPath = path.join(__dirname, zipName);
     
     const zip = new AdmZip();
