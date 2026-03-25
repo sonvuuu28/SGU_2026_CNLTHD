@@ -92,10 +92,18 @@ app.post('/upload', upload.array('excelFiles', 50), async (req, res) => {
 
 
 app.get('/download-zip/:name', (req, res) => {
-    const filePath = path.join(__dirname, req.params.name);
-    res.download(filePath, () => {
-        // Tải xong thì xóa luôn file ZIP trên server cho nhẹ
-        if (fs.existsSync(filePath)) fs.unlinkSync(filePath);
+    const zipPath = path.join(__dirname, req.params.name);
+
+    res.download(zipPath, (err) => {
+        if (err) {
+            console.error(`[DOWNLOAD ERROR] ${req.params.name}: ${err.message}`);
+            // Nếu lỗi nhưng file vẫn tồn tại, có thể không xóa để người dùng thử lại
+        } else {
+            console.log(`[CLEANUP] Download finished. Removing: ${req.params.name}`);
+            if (fs.existsSync(zipPath)) {
+                fs.unlinkSync(zipPath);
+            }
+        }
     });
 });
 
