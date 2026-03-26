@@ -59,3 +59,71 @@ Hướng tới một nền tảng SaaS mạnh mẽ, hỗ trợ nhiều định d
 ---
 
 _Dự án được xây dựng với mục tiêu không chỉ là code, mà là giải pháp kỹ thuật thực tế._
+ ## Flow hệ thống
+┌─────────────────────────────────────────────────────────┐
+│                     CLIENT (Browser)                    │
+└─────────────────────────────────────────────────────────┘
+         │                              ▲
+         │ 1. POST /upload              │ 5. Poll GET /status/:id
+         │    (gửi file Excel)          │    mỗi 2 giây
+         ▼                              │
+┌─────────────────────────────────────────────────────────┐
+│                    API SERVER (server.js)               │
+│                                                         │
+│  2. Nhận file → lưu vào uploads/                        │
+│  3. Tạo "phiếu việc" cho từng file                      │
+│  4. Trả về requestId ngay lập tức                       │
+│                                                         │
+│  6. Client poll → đếm job completed trong Redis         │
+│  7. Tất cả xong → gom PDF → tạo ZIP                     │
+│  8. Trả về zipUrl cho client                            │
+└─────────────────────────────────────────────────────────┘
+         │                              ▲
+         │ đẩy job vào queue            │ báo hoàn thành
+         ▼                              │
+┌─────────────────────────────────────────────────────────┐
+│                    REDIS (Job Queue)                    │
+│                                                         │
+│  Lưu danh sách phiếu việc:                              │
+│  { requestId, inputFile, outputFile, status }           │
+│                                                         │
+│  ┌──────┐ ┌──────┐ ┌──────┐ ┌──────┐ ┌──────┐           │
+│  │Job #1│ │Job #2│ │Job #3│ │Job #4│ │Job #5│  ...      │
+│  └──────┘ └──────┘ └──────┘ └──────┘ └──────┘           │
+└─────────────────────────────────────────────────────────┘
+                            │
+                            │ worker tự đến lấy job
+                            ▼
+┌─────────────────────────────────────────────────────────┐
+│               WORKER SERVICE (worker-service.js)        │
+│                                                         │
+│   Worker #1 (4 luồng)      Worker #2 (4 luồng)          │
+│   ├── Job #1 → convert     ├── Job #2 → convert         │
+│   ├── Job #3 → convert     ├── Job #4 → convert         │
+│   ├── Job #5 → convert     ├── Job #6 → convert         │
+│   └── Job #7 → convert     └── Job #8 → convert         │
+│                                                         │
+│   Xong → ghi PDF vào output/{requestId}/                │
+│   Xong → xóa file Excel gốc trong uploads/              │
+└─────────────────────────────────────────────────────────┘
+                         │
+                         ▼
+┌─────────────────────────────────────────────────────────┐
+│                    FILE SYSTEM                          │
+│                                                         │
+│  uploads/          output/abc-123/      Ket_Qua.zip     │
+│  ├── tmp_001  →    ├── BaoCao.pdf  →   (gom lại)        │
+│  ├── tmp_002  →    ├── DanhSach.pdf                     │
+│  └── tmp_003  →    └── TongHop.pdf                      │
+│  (bị xóa sau       (bị xóa sau         (bị xóa sau      │
+│   khi convert)      khi zip)            khi download)   │
+└─────────────────────────────────────────────────────────┘
+                         │
+                         ▼
+┌─────────────────────────────────────────────────────────┐
+│                  CLIENT DOWNLOAD                        │
+│                                                         │
+│  GET /download-zip/Ket_Qua_abc-123.zip                  │
+│  → Trình duyệt tự động tải file ZIP về máy              │
+│  → Server xóa ZIP sau khi download xong                 │
+└─────────────────────────────────────────────────────────┘
