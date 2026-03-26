@@ -17,7 +17,7 @@ app.use(express.json());
 const redisConnection = {
     host: process.env.REDIS_HOST || '127.0.0.1',
     port: parseInt(process.env.REDIS_PORT || '6379'),
-    password: process.env.REDIS_PASSWORD || undefined,
+    // password: process.env.REDIS_PASSWORD || undefined,
 };
 
 const convertQueue = new Queue('excel-convert', { connection: redisConnection });
@@ -27,13 +27,6 @@ const convertQueue = new Queue('excel-convert', { connection: redisConnection })
 // Nếu muốn multi-node API server → thay bằng Redis hash
 // ============================================================
 const requestStore = new Map();
-// requestStore[requestId] = {
-//   total: N,
-//   done: 0,
-//   failed: 0,
-//   files: [ { jobId, outputFile, status } ],
-//   zipPath: null
-// }
 
 // ============================================================
 // Hàm xóa dấu tiếng Việt

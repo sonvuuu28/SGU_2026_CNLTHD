@@ -1,14 +1,3 @@
-/**
- * worker-service.js
- *
- * Chạy độc lập, lắng nghe queue BullMQ và xử lý convert Excel → PDF.
- * Có thể bật nhiều instance trên nhiều máy chủ khác nhau để scale ngang.
- *
- * Khởi động:
- *   node worker-service.js
- *   hoặc: WORKER_CONCURRENCY=5 node worker-service.js
- */
-
 const { Worker } = require('bullmq');
 const fs = require('fs');
 const path = require('path');
@@ -20,7 +9,7 @@ const libre = require('libreoffice-convert');
 const redisConnection = {
     host: process.env.REDIS_HOST || '127.0.0.1',
     port: parseInt(process.env.REDIS_PORT || '6379'),
-    password: process.env.REDIS_PASSWORD || undefined,
+    // password: process.env.REDIS_PASSWORD || undefined,
 };
 
 const CONCURRENCY = parseInt(process.env.WORKER_CONCURRENCY || '4');
