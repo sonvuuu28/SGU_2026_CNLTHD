@@ -36,7 +36,7 @@
 **~120 trang**
 
 ### Chương 3: Thiết lập môi trường và cấu trúc dự án Node.js
-**3.1 Môi trường phát triển** (Lý thuyết)
+**3.1 Cài đặt môi trường phát triển** (Lý thuyết)
 * Node.js LTS, nvm, VSCode, Postman; cấu hình .env; nodemon; ESLint + Prettier
 
 **3.2 Tổ chức cấu trúc thư mục** (Lý thuyết)
@@ -162,25 +162,16 @@
 * Benchmark req/s trước/sau cluster; ảnh htop thấy N process; CPU usage graph
 
 ### Chương 9: Error Handling và Testing
-**9.1 Error Handling patterns** (Lý thuyết)
+**9.1. Các mô hình xử lý lỗi** (Lý thuyết)
 * Phân loại lỗi: operational vs programmer errors; Error class tùy chỉnh
 * process.on('unhandledRejection') và 'uncaughtException'; khi nào exit(1)
 * asyncHandler() wrapper cho Express; centralized error middleware
 
-**9.2 Testing với Jest và Supertest** (Lý thuyết)
+**9.2 Kiểm thử với Node.js** 
 * Unit test vs Integration test vs E2E; describe, it, expect, beforeEach/afterEach
-* jest.mock(): mock child_process, fs, external calls; Supertest test HTTP endpoints
-* Coverage với c8/Istanbul; mức coverage tốt cho production
-
-**9.3 Code minh họa** (Code mẫu)
-* Custom AppError class; asyncHandler(); global error middleware với HTTP status đúng
-* Unit test convertFile() với jest.mock('child_process'); integration test POST /upload
 
 **9.4 Bài tập ứng dụng** (Bài tập)
 * Viết test suite cho fileService.js đạt ≥80% coverage (mock Multer và BullMQ)
-
-**9.5 Kết quả minh chứng** (Kết quả)
-* Ảnh jest --coverage output; log error bị bắt đúng; badge coverage
 
 ### Chương 10: Performance, Profiling và Logging
 **10.1 Performance & Profiling** (Lý thuyết)
